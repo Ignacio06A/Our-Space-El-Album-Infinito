@@ -1,0 +1,49 @@
+<body class="bg-background text-on-background min-h-screen flex flex-col font-body-md overflow-x-hidden antialiased">
+    <main class="flex-grow">
+        <section class="nebula-bg min-h-[1024px] flex flex-col items-center justify-center relative px-margin-mobile md:px-margin-desktop text-center pt-20">
+            <div class="absolute inset-0 bg-cover bg-center opacity-30 mix-blend-screen z-0 pointer-events-none" style="background-image: url('https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?q=80&w=2070')"></div>
+            <div class="relative z-10 flex flex-col items-center gap-stack-lg max-w-3xl fade-in">
+                <div class="glass-panel rounded-xl p-stack-sm md:p-stack-md flex flex-col items-center gap-base transform transition-transform hover:scale-105 duration-500">
+                    <p class="font-label-sm text-label-sm text-on-surface-variant tracking-[0.2em] uppercase">Contador</p>
+                    <div class="font-headline-md text-headline-md text-tertiary drop-shadow-[0_0_12px_rgba(254,214,0,0.4)] flex flex-wrap justify-center gap-x-4 gap-y-2" id="love-counter">
+                        <span>...</span>
+                    </div>
+                </div>
+                <a class="mt-8 px-8 py-4 bg-primary text-on-primary rounded-full font-label-sm text-label-sm uppercase tracking-widest hover:bg-primary-container transition-all shadow-[0_0_15px_rgba(226,177,177,0.3)] hover:shadow-[0_0_25px_rgba(226,177,177,0.5)]" href="fotos.html">Explorar Galería</a>
+            </div>
+        </section>
+    </main>
+    </div>
+
+    <script>
+    // Fecha objetivo (AÑO, MES-1, DÍA, HORA, MINUTO, SEGUNDO)
+    const targetDate = new Date(2026, 6, 8, 0, 0, 0); // Ej: 10 julio 2026
+
+    function updateCountdown() {
+        const now = new Date();
+        const diff = targetDate - now;
+
+        if (diff <= 0) {
+            document.getElementById("love-counter").innerHTML = "¡Llegó el momento!";
+            return;
+        }
+
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+        const minutes = Math.floor((diff / (1000 * 60)) % 60);
+        const seconds = Math.floor((diff / 1000) % 60);
+
+        document.getElementById("love-counter").innerHTML = `
+            <span>${days}d</span>
+            <span>${hours}h</span>
+            <span>${minutes}m</span>
+            <span>${seconds}s</span>
+        `;
+    }
+
+    // Actualiza cada segundo
+    setInterval(updateCountdown, 1000);
+
+    // Ejecutar inmediatamente
+    updateCountdown();
+</script>
