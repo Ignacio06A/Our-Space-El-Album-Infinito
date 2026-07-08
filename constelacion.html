@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html class="dark" lang="es">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Our Space: El Álbum Infinito</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Playfair+Display:wght@600;700&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="script.js">
+    </script>
+    <style>
+        .glass-panel {
+            background: rgba(19, 20, 18, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 205, 204, 0.15);
+            box-shadow: inset 1px 1px 0px rgba(255, 255, 255, 0.05), 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        .star-node {
+            animation: pulse 3s infinite alternate;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 0.8;
+                box-shadow: 0 0 10px rgba(254, 214, 0, 0.4);
+            }
+
+            100% {
+                transform: scale(1.15);
+                opacity: 1;
+                box-shadow: 0 0 25px rgba(254, 214, 0, 0.9);
+            }
+        }
+
+        .scroll-reveal {
+            opacity: 0;
+            transform: translateY(28px);
+            transition: opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1), transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .scroll-reveal.revealed {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .scroll-reveal-scale {
+            opacity: 0;
+            transform: scale(0.85);
+            transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .scroll-reveal-scale.revealed {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* Rotación suave en 3D para el universo de la constelación */
+        .constellation-universe {
+            transition: transform 1.2s cubic-bezier(0.2, 0, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+
+      /* Contenedor dinámico: se vuelve cuadrado al girar para que quepa el 8 a lo alto */
+        .dynamic-container {
+            aspect-ratio: 16/9;
+            transition: aspect-ratio 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        @media (min-width: 768px) {
+            .dynamic-container {
+                aspect-ratio: 21/9;
+            }
+        }
+        .dynamic-container.is-vertical {
+            aspect-ratio: 1/1; /* Un cuadrado perfecto acomoda la anchura original que ahora es altura */
+        }
+
+        /* El lienzo interno: mantiene sus proporciones intactas siempre, sin deformarse */
+        .constellation-universe {
+            transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+            
+            /* Le damos proporciones fijas para que ignore el estiramiento del contenedor exterior */
+            width: 100%;
+            aspect-ratio: 16/9;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%); /* Centrado perfecto */
+        }
+        @media (min-width: 768px) {
+            .constellation-universe {
+                aspect-ratio: 21/9;
+            }
+        }
+
+        .constellation-universe.rotated {
+            /* Al girar, mantenemos el centrado (-50%) y aplicamos los 90 grados */
+            transform: translate(-50%, -50%) rotate(90deg);
+        }
+
+        /* Contrarrotar los textos internos para que siempre se lean de forma horizontal */
+        .constellation-universe.rotated .star-label {
+            transform: translateX(-50%) rotate(-90deg);
+            margin-left: -25px; 
+            margin-top: -22px;
+        }
+    </style>
+</head>
+
+<body class="bg-background text-on-background min-h-screen flex flex-col font-body-md overflow-x-hidden antialiased">
+    <header
+        class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin-mobile md:px-margin-desktop h-20 mx-auto bg-background/80 backdrop-blur-xl border-b border-primary/20 shadow-sm shadow-primary/10 transition-all duration-300 ease-out">
+        <div class="font-headline-md text-headline-md text-tertiary drop-shadow-[0_0_8px_rgba(254,214,0,0.5)]">I & A
+        </div>
+        <nav class="hidden md:flex gap-gutter items-center font-label-sm text-label-sm">
+            <a class="text-on-surface-variant hover:text-primary transition-colors hover:bg-white/5 px-3 py-2 rounded-lg uppercase tracking-widest"
+                href="index.html">Our Space</a>
+            <a class="text-primary border-b-2 border-primary pb-1 uppercase tracking-widest"
+                href="constelacion.html">Constelación</a>
+        </nav>
+    </header>
+
+    <main class="flex-grow pt-24">
+        <section class="py-stack-lg px-margin-mobile md:px-margin-desktop relative bg-surface-container-lowest"
+            id="mensajes">
+            <canvas id="stars" class="absolute inset-0 z-0 pointer-events-none"></canvas>
+            <div class="max-w-container-max mx-auto flex flex-col items-center gap-4 relative z-10">
+
+                <h2 class="font-headline-md text-headline-md text-primary text-center scroll-reveal"
+                    id="constellation-title">
+                    Nuestra Fecha Especial: El 8
+                </h2>
+
+                <p id="constellation-description"
+                    class="font-body-md text-body-md text-on-surface-variant text-center max-w-lg scroll-reveal-scale">
+                    El 8 no es solo un número, es el día en que nuestras historias se cruzaron y empezó algo que nunca
+                    quiero que termine.
+                </p>
+
+                <!-- BOTÓN MÁGICO DE INTERACCIÓN -->
+                <button onclick="togglePerspective()"
+                    class="mt-2 group flex items-center gap-2 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 px-5 py-2.5 rounded-full font-label-sm text-[13px] tracking-wider uppercase transition-all duration-300 shadow-lg shadow-primary/5 hover:scale-105 active:scale-95">
+                    <span
+                        class="material-symbols-outlined text-[18px] transition-transform duration-700 group-hover:rotate-180"
+                        id="btn-icon">all_inclusive</span>
+                    <span id="btn-text">Ver el otro lado del 8</span>
+                </button>
+
+                <!-- Contenedor del Cosmos con marco fijo para evitar deformación por giro -->
+                <div id="universe-container"
+                    class="dynamic-container relative w-full max-w-[950px] bg-surface/30 rounded-xl border border-outline-variant/30 overflow-hidden mt-6 shadow-inner shadow-black/50 scroll-reveal-scale"
+                    style="transition-delay: 0.2s;">
+
+                    <div id="universe-canvas" class="constellation-universe">
+                        <!-- Líneas del Infinito / El número 8 -->
+                        <svg class="absolute inset-0 w-full h-full pointer-events-none opacity-40"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <line stroke="#fed600" stroke-dasharray="4 4" stroke-width="1.5" x1="50%" y1="50%" x2="38%"
+                                y2="28%"></line>
+                            <line stroke="#fed600" stroke-dasharray="4 4" stroke-width="1.5" x1="38%" y1="28%" x2="20%"
+                                y2="28%"></line>
+                            <line stroke="#fed600" stroke-dasharray="4 4" stroke-width="1.5" x1="20%" y1="28%" x2="20%"
+                                y2="72%"></line>
+                            <line stroke="#fed600" stroke-dasharray="4 4" stroke-width="1.5" x1="20%" y1="72%" x2="38%"
+                                y2="72%"></line>
+                            <line stroke="#fed600" stroke-dasharray="4 4" stroke-width="1.5" x1="38%" y1="72%" x2="50%"
+                                y2="50%"></line>
+                            <line stroke="#fed600" stroke-dasharray="4 4" stroke-width="1.5" x1="50%" y1="50%" x2="62%"
+                                y2="28%"></line>
+                            <line stroke="#fed600" stroke-dasharray="4 4" stroke-width="1.5" x1="62%" y1="28%" x2="80%"
+                                y2="28%"></line>
+                            <line stroke="#fed600" stroke-dasharray="4 4" stroke-width="1.5" x1="80%" y1="28%" x2="80%"
+                                y2="72%"></line>
+                            <line stroke="#fed600" stroke-dasharray="4 4" stroke-width="1.5" x1="80%" y1="72%" x2="62%"
+                                y2="72%"></line>
+                            <line stroke="#fed600" stroke-dasharray="4 4" stroke-width="1.5" x1="62%" y1="72%" x2="50%"
+                                y2="50%"></line>
+                        </svg>
+
+                        <!-- Las estrellas serán inyectadas aquí por JavaScript -->
+                        <div id="stars-nodes-container" class="absolute inset-0 w-full h-full"></div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer
+        class="w-full py-stack-lg px-margin-desktop flex flex-col items-center gap-base bg-background border-t border-primary/10">
+        <div class="font-headline-sm text-headline-sm text-primary mb-4">I & A</div>
+        <p class="font-body-md text-body-md text-tertiary text-center max-w-md">Hecho con amor • El Álbum Infinito</p>
+    </footer>
+
+    <!-- MODAL PARA LAS CARTAS -->
+    <div class="fixed inset-0 z-[100] flex items-center justify-center p-margin-mobile opacity-0 pointer-events-none transition-opacity duration-500"
+        id="letter-modal">
+        <div class="absolute inset-0 bg-background/80 backdrop-blur-sm" onclick="closeModal()"></div>
+        <div
+            class="glass-panel relative w-full max-w-lg rounded-xl p-stack-md transform scale-95 transition-transform duration-500 flex flex-col gap-stack-sm border border-primary/30 shadow-[0_10px_40px_rgba(255,205,204,0.1)]">
+            <button class="absolute top-4 right-4 text-on-surface-variant hover:text-primary transition-colors p-2"
+                onclick="closeModal()">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+            <div class="flex items-center gap-3 text-tertiary mb-2">
+                <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+                <h3 class="font-headline-sm text-headline-sm" id="modal-title">X</h3>
+            </div>
+            <div class="w-full h-[1px] bg-gradient-to-r from-primary/50 to-transparent mb-4"></div>
+            <p class="font-body-md text-body-md text-on-surface-variant leading-relaxed italic border-l-2 border-tertiary/30 pl-4"
+                id="modal-content">Contenido de la carta...</p>
+            <div class="mt-4 self-end font-headline-md text-[20px] text-primary opacity-80">- Ignacio</div>
+        </div>
+    </div>
+
+    <script>
+        const constellationNodes = [
+            {
+                title: "1",
+                text: "En este primer año te empecé a concer y desde un inicio de tomé mucha confianza, me me abrí mucho contigo desde un inicio porque me hiciste sentir muy cómodo",
+                top: "50%", left: "50%", type: "active"
+            },
+            {
+                title: "2",
+                text: "En este año llegamos a octavo y sumamos un año más de amistad",
+                top: "28%", left: "38%", type: "active"
+            },
+            {
+                title: "3",
+                text: "En noveno nuestra conexión se volvió más fuerte. Cada momento contigo se sentía especial, y aunque éramos amigos ya empezabas a significar mucho más para mí",
+                top: "28%", left: "20%", type: "active"
+            },
+            {
+                title: "4",
+                text: "Aquí es donde llegamos a décimo y este año lo cambió todo. Empezó con nuestra amistad de siempre, pero poco a poco algo diferente empezó a crecer hasta que dejamos de ser solo amigos",
+                top: "72%", left: "20%", type: "active"
+            },
+            {
+                title: "5",
+                text: "Aquí cumplimos nuestro primer año de novios",
+                top: "72%", left: "38%", type: "active"
+            },
+            {
+                title: "6",
+                text: "Ahora pasamos a nuestro segundo año de novios",
+                top: "28%", left: "62%", type: "active"
+            },
+            {
+                title: "7",
+                text: "Este fue nuestro segundo año de novios, seguimos creciendo juntos aprendiendo, apoyándonos y demostrando que lo nuestro es algo real",
+                top: "28%", left: "80%", type: "active"
+            },
+            {
+                title: "8",
+                text: "Y aquí estamos 8 años después. No es un final, es solo el inicio de todo lo que nos falta por vivir. Es increíble que hoy sea el día que llegamos la mitad, 4 años siendo amigos y 4 años siendo más que amigos. Gracias por todo lo que hemos vivido y por todo lo que nos falta por vivir. Te amo un poquito mucho mi princesa hermosa",
+                top: "72%", left: "80%", type: "current"
+            }
+        ];
+
+        const nodesContainer = document.getElementById("stars-nodes-container");
+
+        function renderConstellation() {
+            constellationNodes.forEach((node, index) => {
+                const delay = 0.3 + (index * 0.08);
+                let innerStarHTML = "";
+                let buttonClass = "absolute group outline-none scroll-reveal-scale -translate-x-1/2 -translate-y-1/2";
+
+                // Agregamos la clase 'star-label' para poder contrarrotarla suavemente en CSS
+                let textClass = "star-label absolute font-label-sm text-label-sm whitespace-nowrap transition-transform duration-700 ease-out";
+
+                if (node.type === "current") {
+                    buttonClass += " z-10";
+                    innerStarHTML = `
+                        <div class="w-6 h-6 bg-tertiary rounded-full star-node relative flex items-center justify-center shadow-[0_0_20px_rgba(254,214,0,0.8)]">
+                            <span class="material-symbols-outlined text-[12px] text-on-tertiary" style="font-variation-settings: 'FILL' 1;">favorite</span>
+                        </div>
+                    `;
+                    textClass += " top-8 left-1/2 -translate-x-1/2 text-tertiary font-bold";
+                } else {
+                    innerStarHTML = `
+                        <div class="w-4 h-4 bg-primary rounded-full star-node relative flex items-center justify-center">
+                            <div class="absolute w-10 h-10 rounded-full border border-primary/30 scale-0 group-hover:scale-100 transition-transform duration-300"></div>
+                        </div>
+                    `;
+                    textClass += " top-6 left-1/2 -translate-x-1/2 text-on-surface-variant opacity-0 group-hover:opacity-100";
+                }
+
+                const labelToShow = node.title + (node.type === "current" ? " (Hoy)" : "");
+
+                const btnStr = `
+                    <button class="${buttonClass}" style="top: ${node.top}; left: ${node.left}; transition-delay: ${delay}s;" onclick="openModal('${node.title}', \`${node.text}\`)">
+                        ${innerStarHTML}
+                        <span class="${textClass}">${labelToShow}</span>
+                    </button>
+                `;
+                nodesContainer.insertAdjacentHTML('beforeend', btnStr);
+            });
+        }
+
+        // CONTROL DE ROTACIÓN Y TEXTOS DINÁMICOS (MÁGICO)
+        let isRotated = false;
+        const universe = document.getElementById("universe-canvas");
+        const universeContainer = document.getElementById("universe-container"); // Añadimos esto
+        const mainTitle = document.getElementById("constellation-title");
+        const mainDescription = document.getElementById("constellation-description");
+        const btnIcon = document.getElementById("btn-icon");
+        const btnText = document.getElementById("btn-text");
+
+        function togglePerspective() {
+            isRotated = !isRotated;
+
+            if (isRotated) {
+                universe.classList.add("rotated");
+                universeContainer.classList.add("is-vertical"); // El contenedor se expande
+
+                mainTitle.innerHTML = "Nuestro amor es infinito";
+                mainDescription.innerHTML = "Porque nuestro 8 al girarlo, se convierte en infinito. Y me gusta pensar que eso somos nosotros: algo que no tiene final";
+
+                btnIcon.innerText = "all_inclusive";
+                btnText.innerText = "Volver a nuestra fecha";
+
+            } else {
+                universe.classList.remove("rotated");
+                universeContainer.classList.remove("is-vertical"); // El contenedor regresa a su tamaño normal
+
+                mainTitle.innerHTML = "Nuestra Fecha Especial: El 8";
+                mainDescription.innerHTML = "El 8 no es solo un número, es el día en que nuestras historias se cruzaron y empezó algo que nunca quiero que termine";
+
+                btnIcon.innerText = "filter_8";
+                btnText.innerText = "Ver el otro lado del 8";
+            }
+        }
+
+        // Control del Modal
+        const modal = document.getElementById("letter-modal");
+        const modalTitle = document.getElementById("modal-title");
+        const modalContent = document.getElementById("modal-content");
+
+        window.openModal = function (title, text) {
+            modalTitle.innerText = title;
+            modalContent.innerText = text;
+            modal.classList.remove("opacity-0", "pointer-events-none");
+            modal.querySelector('.glass-panel').classList.remove("scale-95");
+            modal.querySelector('.glass-panel').classList.add("scale-100");
+        }
+
+        window.closeModal = function () {
+            modal.classList.add("opacity-0", "pointer-events-none");
+            modal.querySelector('.glass-panel').classList.remove("scale-100");
+            modal.querySelector('.glass-panel').classList.add("scale-95");
+        }
+
+        // Fondo Estrellado Dinámico
+        const canvas = document.getElementById("stars");
+        if (canvas) {
+            const ctx = canvas.getContext("2d");
+            let stars = [];
+            function resizeCanvas() {
+                canvas.width = canvas.parentElement.offsetWidth;
+                canvas.height = canvas.parentElement.offsetHeight;
+                stars = Array.from({ length: 90 }, () => ({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    r: Math.random() * 1.4 + 0.4,
+                    a: Math.random() * 0.7 + 0.3,
+                }));
+            }
+            function drawStars() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                stars.forEach((s) => {
+                    ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255, 205, 204, ${s.a})`; ctx.fill();
+                });
+                requestAnimationFrame(drawStars);
+            }
+            window.addEventListener("resize", resizeCanvas);
+            resizeCanvas(); drawStars();
+        }
+
+        // Scroll Reveal Observer
+        function initScrollReveal() {
+            const revealEls = document.querySelectorAll(".scroll-reveal, .scroll-reveal-scale");
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add("revealed");
+                    }
+                });
+            }, { threshold: 0.1 });
+            revealEls.forEach((el) => observer.observe(el));
+        }
+
+        window.addEventListener("DOMContentLoaded", () => {
+            renderConstellation();
+            initScrollReveal();
+        });
+    </script>
+</body>
+
+</html>
